@@ -20,6 +20,8 @@ def load_model(path):
 def predict_rows(pipe, rows):
     proba = pipe.predict_proba(rows)
     preds = pipe.predict(rows)
-    return [{"prediction": int(p),
-             "probability": round(float(pr[1]), 4)}
-            for p, pr in zip(preds, proba)]
+    out = []
+    for p, pr in zip(preds, proba):
+        prob = float(pr[1]) if len(pr) == 2 else float(max(pr))
+        out.append({"prediction": int(p), "probability": round(prob, 4)})
+    return out

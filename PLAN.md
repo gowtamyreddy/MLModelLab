@@ -43,3 +43,20 @@ later. ML Model Lab makes that the product.
 - Meganaa: the experiment questions she demos with, which
   metric she would optimize in an interview, README story,
   interview explanation.
+
+## V2 (built 2026-10-24, at her direction: V1 was too simple
+to stand out)
+- Datasets: breast_cancer + digits (multiclass), plus CSV
+  datasets registered with auto-incrementing versions
+  (v1, v2, ...) and hashes, not just a hash alone.
+- Search: RandomizedSearchCV per model family, F1 scored,
+  best trial recorded as a run, full trial table printed.
+- Serving: FastAPI app (health, runs, datasets, champion,
+  predict, drift) for the champion model.
+- Drift: per-feature standardized mean shift against the
+  champion run's stored training means and stds.
+- CI gate: a candidate must strictly beat the champion on
+  F1 or the command exits 1. Ties fail. This is the
+  TrustLens idea applied to classic ML.
+- MLflow export: standard file-store layout MLflow UI can
+  open, produced without installing MLflow.

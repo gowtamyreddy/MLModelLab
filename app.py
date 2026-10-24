@@ -21,9 +21,11 @@ def leaderboard(sort_by):
     if conn is None:
         return [], "No runs yet. Train from the CLI first."
     runs = store.list_runs(conn, sort_by)
-    rows = [[r["id"], r["model"], r["variant"],
+    rows = [[r["id"], "%s %s" % (r["dataset"],
+             r["dataset_version"] or ""), r["model"], r["variant"],
              "%.4f" % r["accuracy"], "%.4f" % r["f1"],
-             "%.4f" % r["roc_auc"], "%.2f" % r["train_seconds"],
+             ("%.4f" % r["roc_auc"]) if r["roc_auc"] is not None
+             else "n/a", "%.2f" % r["train_seconds"],
              "CHAMPION" if r["champion"] else ""]
             for r in runs]
     champ = store.champion(conn)
@@ -41,10 +43,11 @@ def detail(run_id):
     run = store.get_run(conn, int(run_id))
     if run is None:
         return "Run not found."
-    return ("Run %d: %s/%s\nDataset: %s (hash %s)\nParams: %s\n"
+    return ("Run %d: %s/%s\nDataset: %s %s (hash %s)\nParams: %s\n"
             "Accuracy %.4f, F1 %.4f, ROC AUC %.4f, train %.2f s\n"
             "Champion: %s"
             % (run["id"], run["model"], run["variant"], run["dataset"],
+               run["dataset_version"] or "",
                run["dataset_hash"], run["params"], run["accuracy"],
                run["f1"], run["roc_auc"], run["train_seconds"],
                "yes, " + (run["champion_reason"] or "")
@@ -63,10 +66,10 @@ with gr.Blocks(title="ML Model Lab",
     sort = gr.Dropdown(["f1", "accuracy", "roc_auc"],
                        value="f1", label="Sort leaderboard by")
     table = gr.Dataframe(
-        headers=["Run", "Model", "Variant", "Accuracy", "F1", "ROC AUC",
-                 "Train (s)", ""],
+        headers=["Run", "Dataset", "Model", "Variant", "Accuracy",
+                 "F1", "ROC AUC", "Train (s)", ""],
         datatype=["number", "str", "str", "str", "str", "str", "str",
-                  "str"], label="Leaderboard", interactive=False)
+                  "str", "str"], label="Leaderboard", interactive=False)
     note = gr.Markdown("No runs yet.")
     refresh = gr.Button("Refresh leaderboard")
     refresh.click(leaderboard, inputs=sort, outputs=[table, note])
